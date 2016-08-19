@@ -1,0 +1,146 @@
+import java.awt.Color;
+import java.awt.Rectangle;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
+import javax.swing.*;
+import p2.bean;
+/**
+ *
+ * @author Samy
+ */
+public class cliente extends JFrame implements ActionListener, Runnable{
+    
+    JTextField txtIP, txtmensaje, txtNombre_Cli;
+    JButton btnEnviar;
+    JTextArea txtMensajes;
+    JLabel usuario,ip,mensaje, saludo,introducir, imagen;
+    //ServerSocket servidor = null;
+    
+    //constructor se instancia todo
+    public cliente(){
+    	imagen = new JLabel(new ImageIcon("gato.png"));
+imagen.setBounds(new Rectangle(400, 80, 445, 322));
+        
+        txtNombre_Cli = new JTextField();
+        txtNombre_Cli.setBounds(70,80,400,25);
+        
+        introducir= new JLabel("POR FAVOR INGRESAR:");
+        introducir.setBounds(10, 50,400,25);
+        
+        usuario= new JLabel("USUARIO:");
+        usuario.setBounds(10, 80,400,25);
+        ip= new JLabel("IP:");
+        ip.setBounds(10, 120,400,25);
+       
+        
+
+         mensaje= new JLabel("MENSAJE:");
+        mensaje.setBounds(10,500,400,25);
+        
+        txtIP = new JTextField();
+        txtIP.setBounds(70,120,400,25);
+        
+        txtmensaje = new JTextField();
+        txtmensaje.setBounds(70,480,350,70);
+              
+        btnEnviar = new JButton("Enviar");
+        btnEnviar.setBounds(430, 500, 100, 40);
+               
+        //btnSalir = new JButton("Salir");
+        //btnSalir.setBounds(10, 90, 400, 20);
+        
+        txtMensajes = new JTextArea();
+        txtMensajes.setBounds(10,170,400,300);
+        
+        txtMensajes.setBackground(Color.CYAN); //Pone de color cyan al displayArea
+        txtMensajes.setForeground(Color.BLACK);
+              
+        btnEnviar.addActionListener(this);
+       
+        //btnSalir.addActionListener(this);
+      
+        add(txtNombre_Cli);
+        add(txtIP);
+        add(txtmensaje);
+        add(usuario);
+        add(btnEnviar);
+        add(ip);
+        add(mensaje);
+        add(saludo);
+        add(introducir);
+        //add(btnSalir);
+        
+        add(txtMensajes);
+        
+        setLayout(null);
+        setSize(600, 600);
+        setVisible(true);
+        setBackground(Color.BLUE);
+                
+        Thread hilo_serv = new Thread(this);
+        hilo_serv.start();
+    }
+    
+    public static void main (String[] args){
+        new cliente();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae) {
+        
+       // if(ae.getSource() == btnSalir){
+         //   try{
+           //     servidor.close();
+             //   dispose();
+            //}catch(IOException e1){
+              //  e1.printStackTrace();
+            //}
+         //}
+        
+        if(ae.getSource() == btnEnviar){
+            
+            try {
+                    //cliente apunte a un servidor y el serviodr redirecciona
+                    //servidor
+            		//puerto que se abre y donde de conectarse y cambiarelo en el cliente
+            		//todos se conectan a esa ip por el puerto dado
+                    Socket cli = new Socket("172.30.237.168",9085);
+                    bean bean = new bean();
+                    bean.setNombre(txtNombre_Cli.getText());
+                    bean.setIP(txtIP.getText());
+                    bean.setmensaje(txtmensaje.getText());
+                    
+                    ObjectOutputStream flujo_envio = new ObjectOutputStream(cli.getOutputStream());
+                    //se manda todo el objeto
+                    flujo_envio.writeObject(bean);
+                    cli.close();
+                    
+            }catch(Exception ex){
+                System.out.println("Error CLiente " + ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+   
+        try{
+        	//puerto que abre el cliente
+            ServerSocket servidor = new ServerSocket(8075);
+            Socket cli;
+            bean bean;
+            while (true){
+                cli = servidor.accept();
+                ObjectInputStream flujo_serv = new ObjectInputStream(cli.getInputStream());
+                bean = (bean)flujo_serv.readObject();
+                txtMensajes.append("\n: " + bean.getNombre_Cli() + " : " +  bean.getmensaje());
+                cli.close();
+            }
+        }catch(Exception e){
+            System.out.println("Error Cliente" + e.getLocalizedMessage());
+        }
+    
+    }
+    
+}
