@@ -1,0 +1,37 @@
+import java.io.Serializable;
+
+/**
+ *
+ * @author Samy
+ */
+
+public class bean implements  Serializable{
+
+    private String Nombre_Cli, IP, mensaje;
+    
+    public String getNombre_Cli(){
+        return Nombre_Cli;
+    }
+    
+    public void setNombre(String Nombre_Cli){
+        this.Nombre_Cli = Nombre_Cli;
+    }
+    
+     public String getIP(){
+        return IP;
+    }
+    
+    public void setIP(String IP){
+        this.IP = IP;
+    }
+    
+    public String getmensaje(){
+        return mensaje;
+    }
+    
+    public void setmensaje(String mensaje){
+        this.mensaje = mensaje;
+    }
+    
+}
+
