@@ -1,0 +1,115 @@
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+import java.io.*;
+import java.net.*;
+import java.util.Date;
+import javax.swing.*;
+import p2.bean;
+/**
+ *
+ * @author Samy
+ */
+public class servidor extends JFrame implements Runnable, ActionListener{
+    
+   JLabel servi;
+    JTextArea txtmensajes;
+    ServerSocket servidor = null;
+    JButton btnSalir;
+    
+    public servidor() {
+       servi= new JLabel("SERVIDOR: Historial  ");
+        servi.setBounds(10, 2,600,60);
+       servi.setFont(new java.awt.Font("ALGERIAN", 0, 36));
+        
+       btnSalir = new JButton ("Salir");
+        btnSalir.setBounds(80,600,100,40);
+        btnSalir.addActionListener(this);
+        
+        txtmensajes = new JTextArea();
+        txtmensajes.setBounds(10, 50, 600, 500);
+        txtmensajes.setBackground(Color.PINK);
+        //setLayout(null);
+        
+        add(btnSalir);      
+        add(txtmensajes);
+        add(servi);
+        setLayout(null);
+        setSize(700, 700);
+        setVisible(true);
+        
+        Thread hilo = new Thread(this);
+        hilo.start();
+    }
+    
+    public static void main (String[] args){
+        new servidor();
+    }
+
+    @Override
+    public void run() {
+    
+        try {
+            //abriendo, publico server socket
+            servidor = new ServerSocket(9095);
+            Socket cli;
+            String Nombre, IP, Mensaje;
+            bean bean;
+            
+            while(true){
+            	
+                //aceptar coneciones y las guarda en bean
+                cli = servidor.accept();
+                ObjectInputStream flujo_llegada = new ObjectInputStream(cli.getInputStream());
+                bean = (bean)flujo_llegada.readObject();
+                
+                Nombre = bean.getNombre_Cli();
+                IP= bean.getIP();
+                Mensaje = bean.getmensaje();
+                
+                txtmensajes.append("\n : " + Nombre + " : le dice a : " + IP + " : " + Mensaje + "\t"+"\t Historial"+ new Date());
+                
+                //entrando
+                //servidor cunado reenvie entra por el puerto dado
+                Socket Cli_envia = new Socket(IP, 8085);
+                ObjectOutputStream flujo_enviar = new ObjectOutputStream(Cli_envia.getOutputStream());
+                flujo_enviar.writeObject(bean);
+                Cli_envia.close();             
+                cli.close();
+            }
+            
+        }catch (Exception ae){
+            ae.printStackTrace();
+            
+            System.out.println("\n Error Servidor" + ae.getLocalizedMessage());
+      
+        }
+    }
+
+@Override
+    public void actionPerformed(ActionEvent e) {
+    
+        if(e.getSource() == btnSalir){
+            
+            try {
+                servidor.close();
+                //cierra el formulario
+                dispose();
+                
+            } catch (IOException ex) {
+            
+                ex.printStackTrace();
+            }
+                               
+            
+        }
+    }
+    
+}
